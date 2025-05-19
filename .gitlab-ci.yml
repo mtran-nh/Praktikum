@@ -1,0 +1,53 @@
+stages:
+  - build
+  - test
+
+variables:
+  BUILD_DIR: build
+  CMAKE_BUILD_TYPE: Release
+  CC: gcc-12
+  CXX: g++-12
+  CTEST_OUTPUT_ON_FAILURE: "1"
+  CCACHE_DIR: "$CI_PROJECT_DIR/.ccache"
+  CCACHE_BASEDIR: "$CI_PROJECT_DIR"
+  CCACHE_MAXSIZE: 500M
+  CMAKE_C_COMPILER_LAUNCHER: ccache
+  CMAKE_CXX_COMPILER_LAUNCHER: ccache
+  CMAKE_GENERATOR: Ninja
+
+.default_cache_paths: &default_cache_paths
+  - .ccache/
+  - build/_deps/
+  - .cache/cmake/
+
+default:
+  image: ubuntu:24.04
+  cache:
+    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+    paths: *default_cache_paths
+  before_script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential cmake gcc-12 g++-12 git ninja-build ccache pkg-config
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+    - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
+    - mkdir -p "$CCACHE_DIR"
+    - ccache -s
+
+build:
+  stage: build
+  script:
+    - cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" -DCMAKE_C_COMPILER_LAUNCHER="$CMAKE_C_COMPILER_LAUNCHER" -DCMAKE_CXX_COMPILER_LAUNCHER="$CMAKE_CXX_COMPILER_LAUNCHER"
+    - cmake --build "$BUILD_DIR" --config "$CMAKE_BUILD_TYPE" -j "$(nproc)"
+  artifacts:
+    paths:
+      - build/
+      - build/_deps/googletest-subbuild/CMakeFiles/CMakeOutput.log
+      - build/_deps/googletest-subbuild/CMakeFiles/CMakeError.log
+
+test:
+  stage: test
+  needs:
+    - build
+  script:
+    - ctest --test-dir "$BUILD_DIR" -j "$(nproc)"

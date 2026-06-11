@@ -51,7 +51,9 @@ void GameManager::startGame() {
  * @return Pointer to the Game instance (or nullptr if not initialized)
  */
 Game* GameManager::getGame() const {
-  throw std::logic_error("GameManager::getGame is not implemented yet.");
+  return (m_game.get())
+  //changing from unique pointer to raw pointer
+  // throw std::logic_error("GameManager::getGame is not implemented yet.");
 }
 
 /**
@@ -60,7 +62,8 @@ Game* GameManager::getGame() const {
  * @return The current game mode
  */
 GameFactory::GameMode GameManager::getGameMode() const {
-  throw std::logic_error("GameManager::getGameMode is not implemented yet.");
+  return (m_gameMode);
+  // throw std::logic_error("GameManager::getGameMode is not implemented yet.");
 }
 
 /**
@@ -69,7 +72,8 @@ GameFactory::GameMode GameManager::getGameMode() const {
  * @return The number of guesses allowed
  */
 int GameManager::getGuessCount() const {
-  throw std::logic_error("GameManager::getGuessCount is not implemented yet.");
+  return (m_guessCount);
+  // throw std::logic_error("GameManager::getGuessCount is not implemented yet.");
 }
 
 /**
@@ -78,20 +82,29 @@ int GameManager::getGuessCount() const {
  * @return The random seed used
  */
 int GameManager::getSeed() const {
-  throw std::logic_error("GameManager::getSeed is not implemented yet.");
+  return (m_seed);
+  // throw std::logic_error("GameManager::getSeed is not implemented yet.");
 }
 
 GameStatistics* GameManager::getStatistics() const {
-  throw std::logic_error("GameManager::getStatistics is not implemented yet.");
+  return (m_statistics.get());
+  // throw std::logic_error("GameManager::getStatistics is not implemented yet.");
 }
 
+//not yet
 void GameManager::recordGameResult() {
+  if (!m_game || !m_statistics) {
+    return;
+  }
   throw std::logic_error("GameManager::recordGameResult is not implemented yet.");
 }
 
 
 bool GameManager::saveStatistics(const std::string& filename) {
-  throw std::logic_error("GameManager::saveStatistics is not implemented yet.");
+  if (!m_statistics)
+    return false;
+  return true;
+  // throw std::logic_error("GameManager::saveStatistics is not implemented yet.");
 }
 
 

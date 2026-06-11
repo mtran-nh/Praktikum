@@ -10,5 +10,14 @@
 #include "../include/Wordle.h"
 
 std::unique_ptr<Game> GameFactory::createGame(GameMode mode, int guessCount, int seed) {
-  throw std::logic_error("GameFactory::createGame is not implemented yet.");
+  switch (mode) {
+    case GameMode ::Easy :
+        return std:: make_unique<EasyGame>(guessCount, seed);
+    case GameMode ::Normal :
+        return std:: make_unique<NormalGame>(guessCount, seed);
+    case GameMode ::Hard :
+        return std:: make_unique<HardGame>(guessCount, seed);
+    default :
+      throw std::logic_error("GameFactory::createGame is not implemented yet.");
+  }
 }

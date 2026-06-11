@@ -6,7 +6,7 @@
 #define GAMEFACTORY_H
 
 #include <memory>
-//#include "Game.h"
+#include "Game.h"
 class Game;
 class GameFactory {
 public:

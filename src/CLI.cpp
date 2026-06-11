@@ -2,15 +2,15 @@
 // Created by Marcel Auer on 04.03.2025.
 //
 
-#include "CLI.h"
+#include "../include/CLI.h"
 #include <iostream>
 
-#include "Utils.h"
-#include <EasyGame.h>
-#include <HardGame.h>
-#include <NormalGame.h>
+#include "../include/Utils.h"
+#include "../include/EasyGame.h"
+#include "../include/HardGame.h"
+#include "../include/NormalGame.h"
 #include <vector>
-#include "WordleSolver.h"
+#include "../include/WordleSolver.h"
 
 /**
  * @brief Constructs a CLI interface for the game.

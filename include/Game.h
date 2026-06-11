@@ -16,7 +16,7 @@
 #include "IGameData.h"
 #include "IGameObserver.h"
 
-#include <GameFactory.h>
+#include "GameFactory.h"
 
 /**
  * @brief Base class for Wordle games using dependency injection.

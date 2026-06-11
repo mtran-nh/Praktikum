@@ -4,12 +4,12 @@
 
 #include <iostream>
 #include <memory>
-#include "CLI.h"
-#include "Game.h"
-#include "GameFactory.h"
-#include "GameManager.h"
-#include "Interface.h"
-#include "Utils.h"
+#include "../include/CLI.h"
+#include "../include/Game.h"
+#include "../include/GameFactory.h"
+#include "../include/GameManager.h"
+#include "../include/Interface.h"
+#include "../include/Utils.h"
 
 void printMenu();
 
@@ -26,6 +26,7 @@ GameFactory::GameMode selectMode();
  * @return An integer representing the exit status of the program.
  */
 int main() {
+  std::cout << "Welcome to Wordle!" << std::endl;
   int seed =
       getRandomSeed();  ///< Random seed for generating the Wordle puzzle.
   int guessCount = 6;   ///< Default number of guesses allowed.

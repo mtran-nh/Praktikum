@@ -3,7 +3,7 @@
 //
 
 #include "Checker.h"
-
+#include "Wordle.h"
 
 /**
  * @brief Compares a guessed word with the solution and evaluates the match.
@@ -30,5 +30,33 @@
  */
 std::array<int, 5> Checker::check(const std::string guess,
                                   const std::string solution) {
-  throw std::logic_error("Checker::check is not implemented yet.");
+  std::array<int, 5> checker_result={0};    
+  std::unordered_map<char, int> letters_with_occurrences;
+  
+  for(const char& letter : solution){
+    letters_with_occurrences[letter]++;
+  }
+  // 2: Letter is correct and in the correct position.       
+  for(int i = 0; i<5; i++){
+    if(guess[i]==solution[i]){
+      checker_result[i]=2;
+      letters_with_occurrences[guess[i]]--;
+    }
+    
+  }                       
+  for(int i = 0; i<5; i++){
+    if(checker_result[i]==2){
+      continue;
+    }
+    if(letters_with_occurrences.find(guess[i])!=letters_with_occurrences.end()&&letters_with_occurrences[guess[i]]>0){
+      checker_result[i]=1;
+      letters_with_occurrences[guess[i]]--;
+    }
+    else{
+      checker_result[i]=0;
+    }
+    
+  }
+  return checker_result;
+  //throw std::logic_error("Checker::check is not implemented yet.");
 }

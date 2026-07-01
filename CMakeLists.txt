@@ -36,7 +36,6 @@ target_link_libraries(assignment_main assignment)
 ##########################################################
 ### Um die Tests lokal auszuführen, Kommentare vor den folgenden Zeilen entfernen
 ##########################################################
-#[[
 
 include(FetchContent)
 FetchContent_Declare(
@@ -64,4 +63,3 @@ include(Catch)
 catch_discover_tests(assignment_tests)
 enable_testing()
 include(CTest)
-]]#

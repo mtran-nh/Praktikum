@@ -29,7 +29,42 @@ CLI::CLI(std::unique_ptr<Game> game) : Interface(std::move(game)) {}
  * the final result (win or lose).
  */
 void CLI::start() {
-  throw std::logic_error("CLI::start is not implemented yet.");
+  while (!game->won()&&!game->guessLimitReached())
+  {
+    // print the game state
+    printState();
+
+    std::string input;
+    std::cin >> input;
+    try{
+      std::array<int, 5> result = game->enterWord(input);
+      m_guesses.push_back(input);
+      m_results.push_back(result);
+
+      if(game->won()){
+        std::cout << "You won!" << std::endl;
+        return;
+      }
+      if(game->guessLimitReached()){
+        std::cout << "You lost!" << std::endl;
+        return;
+      }
+    }catch(const std::invalid_argument& e){
+      std::cout << "\n Wrong" << e.what() << std::endl;
+      waitForUser();
+      continue;
+    }
+    catch(const std::exception& e){
+      std::cout << "\n Wrong" << e.what() << std::endl;
+      waitForUser();
+      continue;
+    }
+
+  }
+
+  std::cout << "You lost!" << std::endl;
+  
+  // throw std::logic_error("CLI::start is not implemented yet.");
 }
 
 /**
@@ -39,6 +74,24 @@ void CLI::start() {
  * the game mode and the number of guesses left.
  */
 void CLI::printGameHeader() const {
+  switch (game->getGameMode())
+  {
+  case GameFactory::GameMode::Easy:
+    std::cout << "the game mode is Easy";
+    break;
+  case GameFactory::GameMode::Normal:
+    std::cout << "the game mode is Normal";
+    break;
+  case GameFactory::GameMode::Hard:
+    std::cout << "the game mode is Hard";
+    break;
+  default:
+    std::cout << "something wrong";
+  }
+
+  
+  std::cout << "the number of guesses left" << game->guessLimit() - game->usedGuesses() << std::endl;
+
   throw std::logic_error("CLI::printGameHeader is not implemented yet.");
 }
 

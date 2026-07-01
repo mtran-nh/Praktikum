@@ -4,7 +4,8 @@
 
 #include "Wordle.h"
 #include <sstream>
-
+#include <random>
+#include <unordered_map>
 /**
  * @brief Constructs a Wordle object and initializes the game data.
  *
@@ -15,7 +16,10 @@
  */
 Wordle::Wordle(const int seed)
 {
-  throw std::logic_error("Wordle::Wordle is not implemented yet.");
+  loadWordsWithEntropy();
+  getWordleSolutionWord(seed);
+  identifyRepeatedLetters(solution);
+  //throw std::logic_error("Wordle::Wordle is not implemented yet.");
 }
 
 /**
@@ -27,7 +31,30 @@ Wordle::Wordle(const int seed)
  */
 void Wordle::loadWordsWithEntropy()
 {
-  throw std::logic_error("Wordle::loadWordsWithEntropy is not implemented yet.");
+  std::ifstream file("../data/words-with-entropy.csv");
+  if (!file.is_open()) {
+        throw std::runtime_error("Failed to open words-with-entropy.csv");
+  }
+  std::string line;
+  // get the first line
+  std::getline(file, line);
+  
+
+  while (std::getline(file, line))
+  {
+    std::stringstream values(line);
+    std::string word, is_solution, first_entropy;
+    getline(values, word, ',');
+    getline(values, is_solution, ',');
+    getline(values, first_entropy);
+    wordle_valid_guesses.insert(word);
+    if(is_solution=="1"){
+      wordle_solution_words.insert(word);
+    }
+  }
+  
+  
+  //throw std::logic_error("Wordle::loadWordsWithEntropy is not implemented yet.");
 }
 
 /**
@@ -40,7 +67,8 @@ void Wordle::loadWordsWithEntropy()
  */
 void Wordle::getWordleSolutionWord(const int seed)
 {
-  throw std::logic_error("Wordle::getWordleSolutionWord is not implemented yet.");
+  int randomIndex = seed % wordle_solution_words.size();
+  solution = *std::next(wordle_solution_words.begin(), randomIndex);
 }
 
 /**
@@ -53,7 +81,19 @@ void Wordle::getWordleSolutionWord(const int seed)
  */
 void Wordle::identifyRepeatedLetters(std::string solution)
 {
-  throw std::logic_error("Wordle::identifyRepeatedLetters is not implemented yet.");
+  // clear the old data
+  letters_with_multiple_occurrences.clear();
+  std::unordered_map<char, int> temp_counts;
+  for(char letter:solution){
+    temp_counts[letter]++;
+  }
+  for(const auto& pair:temp_counts ){
+    if(pair.second>=2){
+      letters_with_multiple_occurrences.insert(pair.first);
+    }
+    
+  }
+  //throw std::logic_error("Wordle::identifyRepeatedLetters is not implemented yet.");
 }
 
 // ===== IGameData Implementation =====
@@ -65,7 +105,8 @@ void Wordle::identifyRepeatedLetters(std::string solution)
  */
 std::string Wordle::getSolutionWord() const
 {
-  throw std::logic_error("Wordle::getSolutionWord is not implemented yet.");
+  return solution;
+  //throw std::logic_error("Wordle::getSolutionWord is not implemented yet.");
 }
 
 /**
@@ -75,7 +116,8 @@ std::string Wordle::getSolutionWord() const
  */
 const std::unordered_set<std::string>& Wordle::getValidGuesses() const
 {
-  throw std::logic_error("Wordle::getValidGuesses is not implemented yet.");
+  return wordle_valid_guesses;
+  // throw std::logic_error("Wordle::getValidGuesses is not implemented yet.");
 }
 
 /**
@@ -84,6 +126,7 @@ const std::unordered_set<std::string>& Wordle::getValidGuesses() const
  * @return Constant reference to the set of repeated letters
  */
 const std::unordered_set<char>& Wordle::getRepeatedLetters() const
-{
-  throw std::logic_error("Wordle::getRepeatedLetters is not implemented yet.");
+{ 
+  return letters_with_multiple_occurrences;
+  //throw std::logic_error("Wordle::getRepeatedLetters is not implemented yet.");
 }

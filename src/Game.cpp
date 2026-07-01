@@ -5,9 +5,11 @@
 #include "Game.h"
 #include <algorithm>
 
-GameFactory::GameMode Game::getGameMode() const{
-  return m_gameMode; 
+GameFactory::GameMode Game::getGameMode() const
+{
+  return m_gameMode; // return the game mode
 }
+
 /**
  * @brief Checks if the guess limit has been reached.
  *

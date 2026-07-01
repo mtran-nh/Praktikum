@@ -43,7 +43,8 @@ public:
     void printWrongLetters() const;
     void addWrongLetter(char letter);
     void printWordleSolution() const;
-
+    // added by me
+    GameFactory::GameMode getGameMode() const;
     // Observer pattern methods
     void addObserver(IGameObserver* observer);
     void removeObserver(IGameObserver* observer);

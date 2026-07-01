@@ -14,7 +14,11 @@
  * - Incorrect letter.
  */
 void Interface::printLegend() const {
-  throw std::logic_error("Interface::printLegend is not implemented yet.");
+  std::cout<< "Legend:";
+  std::cout<< "=: Correct letter in correct position" << std::endl;
+  std::cout<< "-: Correct letter in wrong position" << std::endl;
+  std::cout<< ".: Incorrect letter" << std::endl;
+  // throw std::logic_error("Interface::printLegend is not implemented yet.");
 }
 
 /**
@@ -27,7 +31,11 @@ void Interface::printLegend() const {
  *  -> =-..-
  */
 void Interface::printPreviousGuesses() const {
-  throw std::logic_error("Interface::printPreviousGuesses is not implemented yet.");
+  std::cout << "Previous guesses:" << std::endl;
+  for (size_t i = 0; i < m_guesses.size(); i++) {
+    std::cout << " <- " << m_guesses[i] << std::endl;
+    std::cout << " -> " << formatResult(m_results[i]) << std::endl; 
+  }
 }
 
 /**
@@ -37,7 +45,9 @@ void Interface::printPreviousGuesses() const {
  * not yet won the game.
  */
 void Interface::printNextGuessPrompt() const {
-  throw std::logic_error("Interface::printNextGuessPrompt is not implemented yet.");
+  if (!game->won()) {
+    std::cout << " <- ?????" << std::endl;
+  }
 }
 
 /**
@@ -53,7 +63,12 @@ void Interface::printNextGuessPrompt() const {
  * @return A string of symbols representing the result.
  */
 std::string Interface::formatResult(const std::array<int, 5>& result) const {
-  throw std::logic_error("Interface::formatResult is not implemented yet.");
+  std::string resultString;
+  for(auto i:result){
+    resultString.push_back(getSymbolForValue(i));
+  }
+  return resultString;
+  // throw std::logic_error("Interface::formatResult is not implemented yet.");
 }
 
 /**
@@ -68,8 +83,19 @@ std::string Interface::formatResult(const std::array<int, 5>& result) const {
  * @return The corresponding symbol as a character.
  */
 char Interface::getSymbolForValue(int value) const {
-  throw std::logic_error("Interface::getSymbolForValue is not implemented yet.");
+  switch (value)
+  {
+  case 2:
+    return m_symbols.correctPosition;
+  case 1:
+    return m_symbols.correctLetter;
+  case 0:
+    return m_symbols.incorrect;
+  default:
+    return '.';
+  }
 }
+
 
 /**
  * @brief Prints the current state of the game.
@@ -78,5 +104,8 @@ char Interface::getSymbolForValue(int value) const {
  * for the next guess if the game is not yet won.
  */
 void Interface::printState() const {
-  throw std::logic_error("Interface::printState is not implemented yet.");
+  printLegend();
+  printPreviousGuesses();
+  printNextGuessPrompt();
+  // throw std::logic_error("Interface::printState is not implemented yet.");
 }

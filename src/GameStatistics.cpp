@@ -43,33 +43,134 @@ void GameStatistics::collectResult(int attempts, bool won, GameFactory::GameMode
 }
 
 std::string GameStatistics::encryptData(const std::string& data, int encryptionKey) {
-  throw std::logic_error("GameStatistics::encryptData is not implemented yet.");
+  std::string result;
+  result.reserve(data.size());
+  const unsigned char keyByte = static_cast<unsigned char>(encryptionKey);
+  for (unsigned char c : data) {
+      result += static_cast<char>(c ^ keyByte);
+  }
+  return result;
+  // throw std::logic_error("GameStatistics::encryptData is not implemented yet.");
 }
 
 std::string GameStatistics::decryptData(const std::string& data, int encryptionKey) {
-  throw std::logic_error("GameStatistics::decryptData is not implemented yet.");
+  return encryptData(data, encryptionKey);
+  // throw std::logic_error("GameStatistics::decryptData is not implemented yet.");
 }
 
 
 bool GameStatistics::saveToFile(const std::string& filename) {
-  
+  std::ofstream of(filename);
+  if(!of.is_open()){
+    return false;
+  }
+  of<<"attempts,won,mode\n";
+  for(auto gameResult:m_results){
+    of << gameResult.attempts << "," 
+       << gameResult.won << "," 
+       << static_cast<int>(gameResult.mode) << "\n";
+  }
+  of.close();
+  return true;
   // throw std::logic_error("GameStatistics::saveToFile is not implemented yet.");
 }
 
 
 bool GameStatistics::saveToFile(const std::string& filename, int encryptionKey) {
-  throw std::logic_error("GameStatistics::saveToFile with encryption is not implemented yet.");
+  std::ofstream of(filename);
+  if(!of.is_open()){
+    return false;
+  }
+  for(auto gameResult:m_results){
+    of<<encryptData(std::to_string(gameResult.attempts),encryptionKey)<<','
+      <<encryptData(std::to_string(gameResult.won),encryptionKey)<<','
+      <<encryptData(std::to_string(static_cast<int>(gameResult.mode)),encryptionKey)<<'\n';
+  }
+  of.close();
+  return true;
+  // throw std::logic_error("GameStatistics::saveToFile with encryption is not implemented yet.");
 }
 
 
 std::map<std::string, int> GameStatistics::loadFromFile(const std::string& filename) {
-  throw std::logic_error("GameStatistics::loadFromFile is not implemented yet.");
+  std::ifstream inputfile(filename);
+  std::map<std::string, int> result{};
+  if(!inputfile.is_open()){
+    // throw std::logic_error("can't open the file");
+    std::cout<<getTotalGames();
+    return result;
+  }
+  
+
+  std::string line;
+  std::getline(inputfile,line);
+  std::string attempt, won, mode;
+
+  while(std::getline(inputfile, line))
+  {
+    if(line.empty()) {
+        continue; 
+    }
+    std::stringstream ss(line);
+    std::getline(ss, attempt, ',');
+    std::getline(ss, won, ',');
+    std::getline(ss, mode, ',');  
+    try{
+      int attempt_int = std::stoi(attempt);
+      bool won_bool = std::stoi(won)!=0?true:false;
+      auto game_model = static_cast<GameFactory::GameMode>(std::stoi(mode));
+      m_results.push_back({attempt_int, won_bool, game_model});
+    }  
+    catch(const std::exception& e){
+      // throw("invalid input");
+      continue;
+    }
+  }
+  if(m_results.empty()){
+    return result;
+  }
+  result["totalGames"]=getTotalGames();
+  result["wonGames"]=getWonGames();
+  result["lostGames"]=getLostGames();
+  result["winRate"]=getWinRate();
+  return result;
+  
+  // throw std::logic_error("GameStatistics::loadFromFile is not implemented yet.");
 }
 
 
 std::map<std::string, int> GameStatistics::loadFromFile(const std::string& filename, int encryptionKey) {
-  throw std::logic_error("GameStatistics::loadFromFile with decryption is not implemented yet.");
+  std::ifstream inputfile(filename);
+  std::map<std::string, int> result{};
+  if(!inputfile.is_open()){
+    return result;
+    throw std::logic_error("can't open the file");
+  }
+  
+
+  std::string line;
+  // std::getline(inputfile,line);
+  std::string attempt, won, mode;
+  while(std::getline(inputfile, line))
+  {
+    std::stringstream ss(line);
+    std::getline(ss, attempt, ',');
+    std::getline(ss, won, ',');
+    std::getline(ss, mode, ',');    
+    m_results.push_back({std::stoi(decryptData(attempt,encryptionKey)), std::stoi(decryptData(won,encryptionKey))!=0, static_cast<GameFactory::GameMode>(std::stoi(decryptData(mode, encryptionKey)))});
+  }
+  if(m_results.empty()){
+    return result;
+  }
+  result["totalGames"]=getTotalGames();
+  result["wonGames"]=getWonGames();
+  result["lostGames"]=getLostGames();
+  result["winRate"]=getWinRate();
+  return result;
+  // throw std::logic_error("GameStatistics::loadFromFile with decryption is not implemented yet.");
 }
+
+// "Bonus_GameStatistics_Encryption_ManualDecryptionCheck"
 
 
 int GameStatistics::getTotalGames(std::optional<GameFactory::GameMode> mode) const {
@@ -94,9 +195,9 @@ int GameStatistics::getWonGames(std::optional<GameFactory::GameMode> mode) const
     for(int i=0; i<m_results.size(); i++){
       if(m_results[i].won){
         gamesNum++;
+      }
     }
-  } 
-    return m_results.size();
+    return gamesNum;
   }
   for(int i=0; i<m_results.size(); i++){
     if(mode == m_results[i].mode && m_results[i].won){
@@ -122,8 +223,11 @@ int GameStatistics::getLostGames(std::optional<GameFactory::GameMode> mode) cons
 
 
 double GameStatistics::getWinRate(std::optional<GameFactory::GameMode> mode) const {
-  return getWonGames(mode)/getTotalGames();
-  // throw std::logic_error("GameStatistics::getWinRate is not implemented yet.");
+  const int total = getTotalGames(mode);
+  if (total == 0) {
+    return 0.0;
+  }
+  return static_cast<double>(getWonGames(mode)) / total * 100.0;
 }
 
 void GameStatistics::clear() {
@@ -134,3 +238,4 @@ void GameStatistics::clear() {
 void GameStatistics::statisticMenu() {
   throw std::logic_error("GameStatistics::statisticMenu is not implemented yet.");
 }
+                                        

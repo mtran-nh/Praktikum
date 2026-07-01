@@ -5,6 +5,10 @@
 #include "Game.h"
 #include <algorithm>
 
+GameFactory::GameMode Game::getGameMode() const
+{
+  return m_gameMode; // return the game mode
+}
 
 /**
  * @brief Checks if the guess limit has been reached.
@@ -13,7 +17,8 @@
  */
 bool Game::guessLimitReached()
 {
-  throw std::logic_error("Game::guessLimitReached is not implemented yet.");
+  return m_guesses>=m_guessLimit;
+  //throw std::logic_error("Game::guessLimitReached is not implemented yet.");
 }
 
 /**
@@ -23,7 +28,8 @@ bool Game::guessLimitReached()
  */
 int Game::usedGuesses()
 {
-  throw std::logic_error("Game::usedGuesses is not implemented yet.");
+  return m_guesses;
+  // throw std::logic_error("Game::usedGuesses is not implemented yet.");
 }
 
 /**
@@ -33,7 +39,8 @@ int Game::usedGuesses()
  */
 int Game::guessLimit()
 {
-  throw std::logic_error("Game::guessLimit is not implemented yet.");
+  return m_guessLimit;
+  //throw std::logic_error("Game::guessLimit is not implemented yet.");
 }
 
 /**
@@ -43,7 +50,8 @@ int Game::guessLimit()
  */
 bool Game::won()
 {
-  throw std::logic_error("Game::won is not implemented yet.");
+  return m_won;
+  //throw std::logic_error("Game::won is not implemented yet.");
 }
 
 /**
@@ -53,7 +61,14 @@ bool Game::won()
  */
 void Game::printWrongLetters() const
 {
-  throw std::logic_error("Game::printWrongLetters is not implemented.");
+  if (wrong_letters.empty()) {
+        return;
+    }
+  for(const char& letter : wrong_letters){
+    std::cout<<letter;
+  }
+  std::cout<<std::endl;
+  // throw std::logic_error("Game::printWrongLetters is not implemented.");
 }
 
 /**
@@ -63,7 +78,9 @@ void Game::printWrongLetters() const
  */
 void Game::addWrongLetter(const char letter)
 {
-  throw std::logic_error("Game::addWrongLetter is not implemented yet.");
+  wrong_letters.insert(letter);
+
+  // throw std::logic_error("Game::addWrongLetter is not implemented yet.");
 }
 
 /**
@@ -73,7 +90,9 @@ void Game::addWrongLetter(const char letter)
  */
 void Game::printWordleSolution() const
 {
-  throw std::logic_error("Game::printWordleSolution is not implemented yet.");
+  std::string solution = m_gameData->getSolutionWord();
+  std::cout << solution << std::endl;
+  // throw std::logic_error("Game::printWordleSolution is not implemented yet.");
 }
 
 /**
@@ -83,7 +102,8 @@ void Game::printWordleSolution() const
  */
 void Game::addObserver(IGameObserver* observer)
 {
-  throw std::logic_error("Game::addObserver is not implemented yet.");
+  m_observers.push_back(observer);
+  // throw std::logic_error("Game::addObserver is not implemented yet.");
 }
 
 /**
@@ -93,7 +113,8 @@ void Game::addObserver(IGameObserver* observer)
  */
 void Game::removeObserver(IGameObserver* observer)
 {
-  throw std::logic_error("Game::removeObserver is not implemented yet.");
+  m_observers.erase(std::remove(m_observers.begin(), m_observers.end(), observer),m_observers.end());
+  //throw std::logic_error("Game::removeObserver is not implemented yet.");
 }
 
 /**
@@ -101,6 +122,9 @@ void Game::removeObserver(IGameObserver* observer)
  */
 void Game::notifyGameFinished()
 {
-  throw std::logic_error("Game::notifyGameFinished is not implemented yet.");
+  for(auto observer : m_observers){
+    observer->onGameFinished(m_guessLimit, m_won, m_gameMode);
+  }
+  //throw std::logic_error("Game::notifyGameFinished is not implemented yet.");
 }
 

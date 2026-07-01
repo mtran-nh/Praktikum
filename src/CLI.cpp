@@ -71,6 +71,25 @@ void CLI::printGameHeader() const {
   std :: cout << "Wrong letters: ";
   game->printWrongLetters();
   std :: cout << "\n\n";
+
+  // switch (game->getGameMode())
+  // {
+  // case GameFactory::GameMode::Easy:
+  //   std::cout << "the game mode is Easy";
+  //   break;
+  // case GameFactory::GameMode::Normal:
+  //   std::cout << "the game mode is Normal";
+  //   break;
+  // case GameFactory::GameMode::Hard:
+  //   std::cout << "the game mode is Hard";
+  //   break;
+  // default:
+  //   std::cout << "something wrong";
+  // }
+
+  
+  // std::cout << "the number of guesses left" << game->guessLimit() - game->usedGuesses() << std::endl;
+
   // throw std::logic_error("CLI::printGameHeader is not implemented yet.");
 }
 

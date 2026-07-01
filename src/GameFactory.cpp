@@ -22,5 +22,5 @@ std::unique_ptr<Game> GameFactory::createGame(GameMode mode, int guessCount, int
         default:
             return std::make_unique<NormalGame>(guessCount, std::move(checker), gameData);
     }
-    throw std::logic_error("GameFactory::createGame is not implemented yet.");
+    // throw std::logic_error("GameFactory::createGame is not implemented yet.");
 }

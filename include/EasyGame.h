@@ -5,7 +5,6 @@
 #ifndef EASYGAME_H
 #define EASYGAME_H
 #include "Game.h"
-#include <stdexcept>
 
 /**
  * @brief EasyGame-Klasse mit Dependency Injection.

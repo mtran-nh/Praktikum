@@ -1,6 +1,3 @@
-//
-// Created by janni on 15.11.2025.
-//
 
 #ifndef GAMEFACTORY_H
 #define GAMEFACTORY_H

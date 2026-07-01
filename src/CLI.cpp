@@ -2,15 +2,15 @@
 // Created by Marcel Auer on 04.03.2025.
 //
 
-#include "../include/CLI.h"
+#include "CLI.h"
 #include <iostream>
 
-#include "../include/Utils.h"
-#include "../include/EasyGame.h"
-#include "../include/HardGame.h"
-#include "../include/NormalGame.h"
+#include "Utils.h"
+#include <EasyGame.h>
+#include <HardGame.h>
+#include <NormalGame.h>
 #include <vector>
-#include "../include/WordleSolver.h"
+#include "WordleSolver.h"
 
 /**
  * @brief Constructs a CLI interface for the game.
@@ -29,30 +29,41 @@ CLI::CLI(std::unique_ptr<Game> game) : Interface(std::move(game)) {}
  * the final result (win or lose).
  */
 void CLI::start() {
-  while (!game->won() && !game->guessLimitReached()) {
-    printGameHeader();
-    std::string guess;
-    std::cout << "Enter your guess: ";
-    std::getline(std::cin, guess);
-    if (guess.empty()) {
-      std::cout << "Empty input!" << std::endl;
+  while (!game->won()&&!game->guessLimitReached())
+  {
+    // print the game state
+    printState();
+
+    std::string input;
+    std::cin >> input;
+    try{
+      std::array<int, 5> result = game->enterWord(input);
+      m_guesses.push_back(input);
+      m_results.push_back(result);
+
+      if(game->won()){
+        std::cout << "You won!" << std::endl;
+        return;
+      }
+      if(game->guessLimitReached()){
+        std::cout << "You lost!" << std::endl;
+        return;
+      }
+    }catch(const std::invalid_argument& e){
+      std::cout << "\n Wrong" << e.what() << std::endl;
+      waitForUser();
       continue;
     }
-    // if (game->guessLimitReached()) {
-    //   std::cout << "Limit reached!" << std::endl;
-    //   break;
-    // }
-    std::array<int, 5> result = game->enterWord(guess);
-    //
-    //havent implemented printing red yellow black
-    game->printWrongLetters();
+    catch(const std::exception& e){
+      std::cout << "\n Wrong" << e.what() << std::endl;
+      waitForUser();
+      continue;
+    }
+
   }
-  if (game->won())
-    std::cout << "You won!" << std::endl;
-  else {
-    std::cout << "You lost" << std::endl;
-    game->printWordleSolution();
-  }
+
+  std::cout << "You lost!" << std::endl;
+  
   // throw std::logic_error("CLI::start is not implemented yet.");
 }
 
@@ -63,34 +74,25 @@ void CLI::start() {
  * the game mode and the number of guesses left.
  */
 void CLI::printGameHeader() const {
-  std::cout << "=====================\n";
-  std::cout << "      WORDLE CLI     \n";
-  std::cout << "=====================\n";
-  std :: cout << "Guesses: " << game->usedGuesses() << "\n";
-  std :: cout << "Guess Limit: " << game->guessLimit() << "\n";
-  std :: cout << "Wrong letters: ";
-  game->printWrongLetters();
-  std :: cout << "\n\n";
-
-  // switch (game->getGameMode())
-  // {
-  // case GameFactory::GameMode::Easy:
-  //   std::cout << "the game mode is Easy";
-  //   break;
-  // case GameFactory::GameMode::Normal:
-  //   std::cout << "the game mode is Normal";
-  //   break;
-  // case GameFactory::GameMode::Hard:
-  //   std::cout << "the game mode is Hard";
-  //   break;
-  // default:
-  //   std::cout << "something wrong";
-  // }
+  switch (game->getGameMode())
+  {
+  case GameFactory::GameMode::Easy:
+    std::cout << "the game mode is Easy";
+    break;
+  case GameFactory::GameMode::Normal:
+    std::cout << "the game mode is Normal";
+    break;
+  case GameFactory::GameMode::Hard:
+    std::cout << "the game mode is Hard";
+    break;
+  default:
+    std::cout << "something wrong";
+  }
 
   
-  // std::cout << "the number of guesses left" << game->guessLimit() - game->usedGuesses() << std::endl;
+  std::cout << "the number of guesses left" << game->guessLimit() - game->usedGuesses() << std::endl;
 
-  // throw std::logic_error("CLI::printGameHeader is not implemented yet.");
+  throw std::logic_error("CLI::printGameHeader is not implemented yet.");
 }
 
 /**
@@ -100,23 +102,5 @@ void CLI::printGameHeader() const {
  * processes the feedback, and updates its word list until the game ends.
  */
 void CLI::startBotGame() {
-  WordleSolver solver;
-  solver.loadWords();
-  while (!game->won() && !game->guessLimitReached()) {
-    printGameHeader();
-    std ::string guess = solver.nextGuess();
-    std ::cout << "Bot guessed: " <<  guess << std::endl;
-    std :: array<int, 5> result = game->enterWord(guess);
-    solver.updatePossibleWords(guess, result);
-  }
-  std::cout << "\n===BOT GAME OVER===\n";
-  if (game->won())
-    std::cout << "You won!" << std::endl;
-  else {
-    std::cout << "You lost" << std::endl;
-    game->printWordleSolution();
-  }
-  // throw std::logic_error("CLI::startBotGame is not implemented yet.");
+  throw std::logic_error("CLI::startBotGame is not implemented yet.");
 }
-
-//entropy related

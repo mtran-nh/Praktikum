@@ -4,7 +4,7 @@
 
 #ifndef IGAMEOBSERVER_H
 #define IGAMEOBSERVER_H
-#include "GameFactory.h"
+#include <GameFactory.h>
 
 /**
  * @brief Observer interface for game events.

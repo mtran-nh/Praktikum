@@ -1,62 +1,71 @@
 //
-// Created by Marcel Auer 24.05.2025.
+// Created by Linus Reuter on 13.06.24.
 //
 
-#include "Checker.h"
-#include "Wordle.h"
-
+#include "EasyGame.h"
+#include <cctype> // for std::isalpha
+#include <algorithm>
 /**
- * @brief Compares a guessed word with the solution and evaluates the match.
+ * @brief Processes the entered word and returns the result.
  *
- * This method checks the guessed word against the solution word and returns
- * an array indicating the correctness of each letter:
- * - 0: Letter is not in the solution.
- * - 1: Letter is in the solution but in the wrong position.
- * - 2: Letter is correct and in the correct position.
+ * This method performs the following steps:
+ * 1. Validates that the entered word has exactly 5 letters.
+ * 2. Checks if the word contains only letters.
+ * 3. Ensures the player has not exceeded the maximum number of guesses.
+ * 4. Compares the entered word with the solution using the Checker instance.
+ * 5. Updates the set of wrong letters for letters not in the solution,
+ *    considering letters with multiple occurrences.
+ * 6. Increments the guess counter.
+ * 7. Checks if the player has won by verifying if all letters are correct.
  *
-* * If a letter appears multiple times in the solution, the method ensures that each occurrence is correctly accounted for.
-  * For example, if the guess is "speed", the result will correctly reflect the positions and counts of 'e'.
-  * A) Solution: "abide" -> Guess: "speed" -> Result: {0, 0, 1, 0, 1}
-  * B) Solution: "erase" -> Guess: "speed" -> Result: {1, 0, 1, 1, 0}
-  * C) Solution: "steal" -> Guess: "speed" -> Result: {2, 0, 2, 0, 0}
-  * D) Solution: "crepe" -> Guess: "speed" -> Result: {0, 1, 2, 1, 0}
+ * @param word The word entered by the player to be checked.
+ * @return An array of 5 integers representing the evaluation of each letter:
+ *         - 0: Letter is not in the solution.
+ *         - 1: Letter is in the solution but in the wrong position.
+ *         - 2: Letter is correct and in the correct position.
  *
- * @param guess The guessed word (must be exactly 5 characters long).
- * @param solution The solution word (must be exactly 5 characters long).
- * @return An array of 5 integers representing the evaluation of each letter.
- *
- * @throws NotAFiveLetterWordException If either the solution or the guess
- *         is not exactly 5 characters long.
+ * @throws NotAFiveLetterWordException If the entered word does not have exactly 5 letters.
+ * @throws WordContainsNonLetterException If the word contains non-letter characters.
+ * @throws GuessLimitReachedException If the player has reached the maximum number of guesses.
  */
-std::array<int, 5> Checker::check(const std::string guess,
-                                  const std::string solution) {
-  std::array<int, 5> checker_result={0};    
-  std::unordered_map<char, int> letters_with_occurrences;
-  
-  for(const char& letter : solution){
-    letters_with_occurrences[letter]++;
+std::array<int, 5> EasyGame::enterWord(std::string word) {
+  // 1. Validates that the entered word has exactly 5 letters.
+  if(word.length()!=5){
+    throw NotAFiveLetterWordException(word);
   }
-  // 2: Letter is correct and in the correct position.       
-  for(int i = 0; i<5; i++){
-    if(guess[i]==solution[i]){
-      checker_result[i]=2;
-      letters_with_occurrences[guess[i]]--;
+  // 2. Checks if the word contains only letters.
+  const std::unordered_set<std::string>& validGuesses = m_gameData->getValidGuesses();
+  for(char c: word){
+    if(!std::isalpha(c)){
+      throw WordContainsNonLetterException(word);
     }
-    
-  }                       
-  for(int i = 0; i<5; i++){
-    if(checker_result[i]==2){
-      continue;
-    }
-    if(letters_with_occurrences.find(guess[i])!=letters_with_occurrences.end()&&letters_with_occurrences[guess[i]]>0){
-      checker_result[i]=1;
-      letters_with_occurrences[guess[i]]--;
-    }
-    else{
-      checker_result[i]=0;
-    }
-    
   }
-  return checker_result;
-  //throw std::logic_error("Checker::check is not implemented yet.");
+  // 3. Ensures the player has not exceeded the maximum number of guesses.
+  if(guessLimitReached()){
+    throw GuessLimitReachedException();
+  }
+  // 4. Compares the entered word with the solution using the Checker instance.
+  std::transform(word.begin(), word.end(), word.begin(), [](unsigned char c){return std::tolower(c);});
+  auto compareResult = m_checker->check(word, m_gameData->getSolutionWord());
+
+  // 5. Updates the set of wrong letters for letters not in the solution, considering letters with multiple occurrences.
+  for(int i=0; i<5; i++){
+    if(compareResult[i]==0){
+      if(m_gameData->getSolutionWord().find(word[i])==std::string::npos){
+        wrong_letters.insert(word[i]);
+      }
+    }
+  }
+
+  // 6. Increments the guess counter.
+  m_guesses++;
+  // 7. Checks if the player has won by verifying if all letters are correct.
+  int sum {0};
+  for(auto num:compareResult){
+    sum += num;
+  }
+  if(sum==10){
+    m_won=true;
+  }
+  return compareResult;
 }

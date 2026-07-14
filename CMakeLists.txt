@@ -36,30 +36,30 @@ target_link_libraries(assignment_main assignment)
 ##########################################################
 ### Um die Tests lokal auszuführen, Kommentare vor den folgenden Zeilen entfernen
 ##########################################################
-#
-#include(FetchContent)
-#FetchContent_Declare(
-#        catch2
-#        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-#        GIT_TAG v3.11.0
-#        GIT_CONFIG http.sslVerify=false
-#)
-#FetchContent_MakeAvailable(catch2)
-#
-#
-#add_executable(assignment_tests ${SOURCE_FILES}
-#        tests/CheckerTest.cpp
-#        tests/NormalGameTest.cpp
-#        tests/HardGameTest.cpp
-#        tests/EasyGameTest.cpp
-#        tests/WordleTest.cpp
-#        tests/InterfaceTests.cpp
-#        tests/GameStatisticsTest.cpp
-#        tests/WordleSolverTests.cpp
-#)
-#target_link_libraries(assignment_tests Catch2::Catch2WithMain)
-#
-#include(Catch)
-#catch_discover_tests(assignment_tests)
-#enable_testing()
-#include(CTest)
+
+include(FetchContent)
+FetchContent_Declare(
+        catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.11.0
+        GIT_CONFIG http.sslVerify=false
+)
+FetchContent_MakeAvailable(catch2)
+
+
+add_executable(assignment_tests ${SOURCE_FILES}
+        tests/CheckerTest.cpp
+        tests/NormalGameTest.cpp
+        tests/HardGameTest.cpp
+        tests/EasyGameTest.cpp
+        tests/WordleTest.cpp
+        tests/InterfaceTests.cpp
+        tests/GameStatisticsTest.cpp
+        tests/WordleSolverTests.cpp
+)
+target_link_libraries(assignment_tests Catch2::Catch2WithMain)
+
+include(Catch)
+catch_discover_tests(assignment_tests)
+enable_testing()
+include(CTest)

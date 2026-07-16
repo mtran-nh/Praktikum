@@ -17,7 +17,28 @@
  * Liest alle Wörter mit is_solution=1 und ihre vorberechneten Entropie-Werte.
  */
 void WordleSolver::loadWords() {
-  throw std::logic_error("WordleSolver::loadWords is not implemented yet.");
+  std :: ifstream file("../data/words-with-entropy.csv");
+  if (!file.is_open()) {
+    throw std :: runtime_error("WordleSolver::loadWords file not found.");
+  }
+  std:: string line;
+  std::getline (file, line);
+  while (std::getline(file, line)) {
+    std:: stringstream ss(line);
+    std:: string word;
+    std:: string solution;
+    std :: string entropy;
+    std::getline(ss, word, ',');
+    std::getline(ss, solution, ',');
+    std::getline(ss, entropy, ',');
+    allWords.push_back(word);
+    allValidWords.push_back(word);
+
+    if (solution == "1")
+      possibleWords.push_back(word);
+    precomputedEntropy[word] = std::stod(entropy);
+  }
+  // throw std::logic_error("WordleSolver::loadWords is not implemented yet.");
 }
 
 /**
@@ -29,14 +50,59 @@ void WordleSolver::loadWords() {
  * @return The expected entropy value.
  */
 double WordleSolver::calculateEntropy(const std::string& guess, const std::vector<std::string>& possibleWords) const {
-  throw std::logic_error("WordleSolver::calculateEntropy is not implemented yet.");
+  if(possibleWords.empty())
+    return 0.0;
+  Checker checker;
+  std::unordered_map<std::string, int> patternCount;
+  for(const auto& word : possibleWords)
+  {
+    auto feedback = checker.check(guess, word);
+    std::string pattern =
+        patternToString(feedback);
+    patternCount[pattern]++;
+  }
+  double entropy = 0.0;
+  double total = static_cast<double>(possibleWords.size());
+  // Shannon entropy
+  for(const auto& pair : patternCount)
+  {
+    double probability =
+        pair.second / total;
+    entropy -= probability *
+               std::log2(probability);
+  }
+  return entropy;
+  // throw std::logic_error("WordleSolver::calculateEntropy is not implemented yet.");
 }
 
 /**
  * @brief Returns the next guess for the bot.
  */
 std::string WordleSolver::nextGuess() {
-  throw std::logic_error("WordleSolver::nextGuess is not implemented yet.");
+
+  if (possibleWords.empty())
+    throw NoValidGuessesLeftException();
+  std::vector<std::string> candidates;
+  if (isFirstGuess && useAllWordsForFirstGuess)
+    candidates = allValidWords;
+  else
+    candidates = possibleWords;
+  std::string bestGuess = "";
+  double bestEntropy = -1.0;
+  for (const auto& word : candidates) {
+    double entropy;
+    if (isFirstGuess && precomputedEntropy.find(word) != precomputedEntropy.end())
+      entropy = precomputedEntropy.at(word);
+    else
+      entropy = calculateEntropy(word, possibleWords);
+    if (entropy > bestEntropy) {
+      bestEntropy = entropy;
+      bestGuess = word;
+    }
+  }
+  isFirstGuess = false;
+  return bestGuess;
+  // throw std::logic_error("WordleSolver::nextGuess is not implemented yet.");
 }
 
 /**
@@ -46,7 +112,22 @@ std::string WordleSolver::nextGuess() {
  * @param feedback The feedback vector for the guess.
  */
 void WordleSolver::addAbsentLetters(const std::string& guess, const std::array<int, 5>& feedback) {
-  throw std::logic_error("WordleSolver::addAbsentLetters is not implemented yet.");
+  for (int i = 0; i < 5; i++)
+  {
+    char letter = guess[i];
+    if (feedback[i] != 0)
+      continue;
+    bool existsElsewhere = false;
+    for (int j = 0; j < 5; j++) {
+      if (guess[j] == letter && feedback[j] != 0){
+        existsElsewhere = true;
+        break;
+      }
+    }
+    if (!existsElsewhere)
+      absentLetters.insert(letter);
+  }
+  // throw std::logic_error("WordleSolver::addAbsentLetters is not implemented yet.");
 }
 
 
@@ -61,7 +142,18 @@ void WordleSolver::addAbsentLetters(const std::string& guess, const std::array<i
  *   - 2 = letter in correct position (green)
  */
 void WordleSolver::updatePossibleWords(const std::string& guess, const std::array<int, 5>& feedback) {
-  throw std::logic_error("WordleSolver::updatePossibleWords is not implemented yet.");
+    Checker checker;
+    std::vector<std::string> filtered;
+    for(const auto& word : possibleWords)
+    {
+      auto result =
+          checker.check(guess, word);
+      if(result == feedback)
+        filtered.push_back(word);
+    }
+    possibleWords = filtered;
+    addAbsentLetters(guess, feedback);
+  // throw std::logic_error("WordleSolver::updatePossibleWords is not implemented yet.");
 }
 
 /**
@@ -69,7 +161,12 @@ void WordleSolver::updatePossibleWords(const std::string& guess, const std::arra
  *        Displays the number of possible solutions remaining.
  */
 void WordleSolver::printGuessingInfo() const {
-  throw std::logic_error("WordleSolver::printGuessingInfo is not implemented yet.");
+  std::cout << "Remaining possible words: "<< possibleWords.size()<< std::endl;
+  std::cout << "Absent letters: ";
+  for(char c : absentLetters)
+    std::cout << c << " ";
+  std::cout << std::endl;
+  // throw std::logic_error("WordleSolver::printGuessingInfo is not implemented yet.");
 }
 
 /**
@@ -77,7 +174,9 @@ void WordleSolver::printGuessingInfo() const {
  * @param entropyResults A vector of pairs containing words and their corresponding entropy values.
  */
 void WordleSolver::printEntropyResults(const std::vector<std::pair<std::string, double>>& entropyResults) {
-  throw std::logic_error("WordleSolver::printEntropyResults is not implemented yet.");
+  for(const auto& item : entropyResults)
+    std::cout << item.first<< " : "<< item.second<< std::endl;
+  // throw std::logic_error("WordleSolver::printEntropyResults is not implemented yet.");
 }
 
 /**
@@ -85,12 +184,17 @@ void WordleSolver::printEntropyResults(const std::vector<std::pair<std::string, 
  * @param guess The best guess word.
  */
 void WordleSolver::printBestGuess(const std::string& guess) {
-  throw std::logic_error("WordleSolver::printBestGuess is not implemented yet.");
+  std::cout << "Best guess: "<< guess<< std::endl;
+  // throw std::logic_error("WordleSolver::printBestGuess is not implemented yet.");
 }
 
 
 std::string WordleSolver::patternToString(const std::array<int, 5>& pattern) {
-  throw std::logic_error("WordleSolver::patternToString is not implemented yet.");
+  std::string result;
+  for (int value : pattern)
+    result += std::to_string(value);
+  return result;
+  // throw std::logic_error("WordleSolver::patternToString is not implemented yet.");
 }
 
 

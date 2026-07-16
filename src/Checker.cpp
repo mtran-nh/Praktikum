@@ -4,7 +4,7 @@
 
 #include "Checker.h"
 #include "Wordle.h"
-
+#include <algorithm>
 /**
  * @brief Compares a guessed word with the solution and evaluates the match.
  *
@@ -30,6 +30,9 @@
  */
 std::array<int, 5> Checker::check(const std::string guess,
                                   const std::string solution) {
+  if(guess.length()!=5 || solution.length()!=5){
+    throw NotAFiveLetterWordException(guess);
+  }
   std::array<int, 5> checker_result={0};    
   std::unordered_map<char, int> letters_with_occurrences;
   

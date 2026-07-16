@@ -15,7 +15,7 @@
 #include <optional>
 
 GameStatistics::GameStatistics() {
-    // Constructor - no initialization needed
+  // Constructor - no initialization needed
 }
 
 void GameStatistics::setTrackingEnabled(bool enabled) {
@@ -30,7 +30,7 @@ bool GameStatistics::isTrackingEnabled() const {
 
 void GameStatistics::onGameFinished(int attempts, bool won, GameFactory::GameMode mode) {
   if (m_trackingEnabled) {
-        collectResult(attempts, won, mode);
+    collectResult(attempts, won, mode);
   }
   // throw std::logic_error("GameStatistics::onGameFinished is not implemented yet.");
 
@@ -47,7 +47,7 @@ std::string GameStatistics::encryptData(const std::string& data, int encryptionK
   result.reserve(data.size());
   const unsigned char keyByte = static_cast<unsigned char>(encryptionKey);
   for (unsigned char c : data) {
-      result += static_cast<char>(c ^ keyByte);
+    result += static_cast<char>(c ^ keyByte);
   }
   return result;
   // throw std::logic_error("GameStatistics::encryptData is not implemented yet.");
@@ -66,9 +66,9 @@ bool GameStatistics::saveToFile(const std::string& filename) {
   }
   of<<"attempts,won,mode\n";
   for(auto gameResult:m_results){
-    of << gameResult.attempts << "," 
-       << gameResult.won << "," 
-       << static_cast<int>(gameResult.mode) << "\n";
+    of << gameResult.attempts << ","
+    << gameResult.won << ","
+    << static_cast<int>(gameResult.mode) << "\n";
   }
   of.close();
   return true;
@@ -77,18 +77,21 @@ bool GameStatistics::saveToFile(const std::string& filename) {
 
 
 bool GameStatistics::saveToFile(const std::string& filename, int encryptionKey) {
-  std::ofstream of(filename);
-  if(!of.is_open()){
+  std::ostringstream plaintext;
+  plaintext << "attempts,won,mode\n";
+  for (const auto& gameResult : m_results) {
+    plaintext << gameResult.attempts << ","
+    << gameResult.won << ","
+    << static_cast<int>(gameResult.mode) << "\n";
+  }
+
+  std::ofstream of(filename, std::ios::binary);
+  if (!of.is_open()) {
     return false;
   }
-  for(auto gameResult:m_results){
-    of<<encryptData(std::to_string(gameResult.attempts),encryptionKey)<<','
-      <<encryptData(std::to_string(gameResult.won),encryptionKey)<<','
-      <<encryptData(std::to_string(static_cast<int>(gameResult.mode)),encryptionKey)<<'\n';
-  }
-  of.close();
+  const std::string encrypted = encryptData(plaintext.str(), encryptionKey);
+  of.write(encrypted.data(), static_cast<std::streamsize>(encrypted.size()));
   return true;
-  // throw std::logic_error("GameStatistics::saveToFile with encryption is not implemented yet.");
 }
 
 
@@ -100,7 +103,7 @@ std::map<std::string, int> GameStatistics::loadFromFile(const std::string& filen
     std::cout<<getTotalGames();
     return result;
   }
-  
+
 
   std::string line;
   std::getline(inputfile,line);
@@ -109,18 +112,18 @@ std::map<std::string, int> GameStatistics::loadFromFile(const std::string& filen
   while(std::getline(inputfile, line))
   {
     if(line.empty()) {
-        continue; 
+      continue;
     }
     std::stringstream ss(line);
     std::getline(ss, attempt, ',');
     std::getline(ss, won, ',');
-    std::getline(ss, mode, ',');  
+    std::getline(ss, mode, ',');
     try{
       int attempt_int = std::stoi(attempt);
       bool won_bool = std::stoi(won)!=0?true:false;
       auto game_model = static_cast<GameFactory::GameMode>(std::stoi(mode));
       m_results.push_back({attempt_int, won_bool, game_model});
-    }  
+    }
     catch(const std::exception& e){
       // throw("invalid input");
       continue;
@@ -134,43 +137,53 @@ std::map<std::string, int> GameStatistics::loadFromFile(const std::string& filen
   result["lostGames"]=getLostGames();
   result["winRate"]=getWinRate();
   return result;
-  
+
   // throw std::logic_error("GameStatistics::loadFromFile is not implemented yet.");
 }
 
 
 std::map<std::string, int> GameStatistics::loadFromFile(const std::string& filename, int encryptionKey) {
-  std::ifstream inputfile(filename);
+  std::ifstream inputfile(filename, std::ios::binary);
   std::map<std::string, int> result{};
-  if(!inputfile.is_open()){
+  if (!inputfile.is_open()) {
     return result;
-    throw std::logic_error("can't open the file");
   }
-  
+
+  std::stringstream buffer;
+  buffer << inputfile.rdbuf();
+  std::stringstream csv(decryptData(buffer.str(), encryptionKey));
 
   std::string line;
-  // std::getline(inputfile,line);
+  std::getline(csv, line);
   std::string attempt, won, mode;
-  while(std::getline(inputfile, line))
-  {
+
+  while (std::getline(csv, line)) {
+    if (line.empty()) {
+      continue;
+    }
     std::stringstream ss(line);
     std::getline(ss, attempt, ',');
     std::getline(ss, won, ',');
-    std::getline(ss, mode, ',');    
-    m_results.push_back({std::stoi(decryptData(attempt,encryptionKey)), std::stoi(decryptData(won,encryptionKey))!=0, static_cast<GameFactory::GameMode>(std::stoi(decryptData(mode, encryptionKey)))});
+    std::getline(ss, mode, ',');
+    try {
+      m_results.push_back({
+        std::stoi(attempt),
+                          std::stoi(won) != 0,
+                          static_cast<GameFactory::GameMode>(std::stoi(mode))});
+    } catch (const std::exception&) {
+      continue;
+    }
   }
-  if(m_results.empty()){
+
+  if (m_results.empty()) {
     return result;
   }
-  result["totalGames"]=getTotalGames();
-  result["wonGames"]=getWonGames();
-  result["lostGames"]=getLostGames();
-  result["winRate"]=getWinRate();
+  result["totalGames"] = getTotalGames();
+  result["wonGames"] = getWonGames();
+  result["lostGames"] = getLostGames();
+  result["winRate"] = static_cast<int>(getWinRate());
   return result;
-  // throw std::logic_error("GameStatistics::loadFromFile with decryption is not implemented yet.");
 }
-
-// "Bonus_GameStatistics_Encryption_ManualDecryptionCheck"
 
 
 int GameStatistics::getTotalGames(std::optional<GameFactory::GameMode> mode) const {
@@ -238,4 +251,3 @@ void GameStatistics::clear() {
 void GameStatistics::statisticMenu() {
   throw std::logic_error("GameStatistics::statisticMenu is not implemented yet.");
 }
-                                        

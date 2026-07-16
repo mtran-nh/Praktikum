@@ -31,7 +31,7 @@
 std::array<int, 5> EasyGame::enterWord(std::string word) {
   // 1. Validates that the entered word has exactly 5 letters.
   if(word.length()!=5){
-    throw NotAFiveLetterWordException("the word is not 5 letters");
+    throw NotAFiveLetterWordException(word);
   }
   // 2. Checks if the word contains only letters.
   const std::unordered_set<std::string>& validGuesses = m_gameData->getValidGuesses();

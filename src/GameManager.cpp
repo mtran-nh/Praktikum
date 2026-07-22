@@ -119,24 +119,33 @@ void GameManager::recordGameResult() {
 
 
 bool GameManager::saveStatistics(const std::string& filename) {
-  throw std::logic_error("GameManager::saveStatistics is not implemented yet.");
+  if (!m_statistics) {
+    return false;
+  }
+  return m_statistics->saveToFile(filename);
 }
-
 
 std::map<std::string, int> GameManager::loadStatistics(const std::string& filename) {
-  throw std::logic_error("GameManager::loadStatistics is not implemented yet.");
+  if (!m_statistics) {
+    return {};
+  }
+  return m_statistics->loadFromFile(filename);
 }
 
-
 void GameManager::startBotGame() {
-  throw std::logic_error("GameManager::startBotGame is not implemented yet.");
+  if (!m_player) {
+    initialize();
+  }
+  if (m_player) {
+    m_player->startBotGame();
+  }
 }
 
 void GameManager::setTrackBotStatistics(bool track) {
-  throw std::logic_error("GameManager::setTrackBotStatistics is not implemented yet.");
+  m_trackBotStatistics = track;
 }
 
 bool GameManager::getTrackBotStatistics() const {
-  throw std::logic_error("GameManager::getTrackBotStatistics is not implemented yet.");
+  return m_trackBotStatistics;
 }
 

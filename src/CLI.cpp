@@ -92,7 +92,6 @@ void CLI::printGameHeader() const {
   
   std::cout << "the number of guesses left" << game->guessLimit() - game->usedGuesses() << std::endl;
 
-  throw std::logic_error("CLI::printGameHeader is not implemented yet.");
 }
 
 /**
@@ -102,5 +101,39 @@ void CLI::printGameHeader() const {
  * processes the feedback, and updates its word list until the game ends.
  */
 void CLI::startBotGame() {
-  throw std::logic_error("CLI::startBotGame is not implemented yet.");
+  WordleSolver solver;
+  try {
+    solver.loadWords();
+  } catch (const std::exception& e) {
+    std::cerr << "WordleSolver failed to load words: " << e.what() << std::endl;
+    return;
+  }
+
+  while (!game->won() && !game->guessLimitReached()) {
+    std::string guess;
+    try {
+      guess = solver.nextGuess();
+    } catch (const std::exception& e) {
+      std::cerr << "No valid guess from solver: " << e.what() << std::endl;
+      break;
+    }
+
+    try {
+      auto result = game->enterWord(guess);
+      m_guesses.push_back(guess);
+      m_results.push_back(result);
+      solver.updatePossibleWords(guess, result);
+      printState();
+    } catch (const std::exception& e) {
+      std::cerr << "Bot guess failed: " << e.what() << std::endl;
+      break;
+    }
+  }
+
+  if (game->won()) {
+    std::cout << "Bot won in " << game->usedGuesses() << " attempts." << std::endl;
+  } else if (game->guessLimitReached()) {
+    std::cout << "Bot failed. Solution was: ";
+    game->printWordleSolution();
+  }
 }

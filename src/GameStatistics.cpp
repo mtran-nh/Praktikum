@@ -249,5 +249,105 @@ void GameStatistics::clear() {
 }
 
 void GameStatistics::statisticMenu() {
-  throw std::logic_error("GameStatistics::statisticMenu is not implemented yet.");
+  const std::string filename = "../data/game_statistics.csv";
+  while (true) {
+    std::cout << "\n=== Statistics Menu ===\n";
+    std::cout << "1. Show summary\n";
+    std::cout << "2. Show per-mode summary\n";
+    std::cout << "3. Save to file (plain)\n";
+    std::cout << "4. Save to file (encrypted)\n";
+    std::cout << "5. Load from file\n";
+    std::cout << "6. Clear statistics\n";
+    std::cout << "0. Back\n";
+    std::cout << "Select option: ";
+
+    int choice;
+    if (!(std::cin >> choice)) {
+      std::cin.clear();
+      std::string discard;
+      std::getline(std::cin, discard);
+      std::cout << "Invalid input, try again." << std::endl;
+      continue;
+    }
+
+    switch (choice) {
+      case 1: {
+        std::cout << "Total games: " << getTotalGames() << std::endl;
+        std::cout << "Won games: " << getWonGames() << std::endl;
+        std::cout << "Lost games: " << getLostGames() << std::endl;
+        std::cout << "Win rate: " << getWinRate() << "%" << std::endl;
+        break;
+      }
+      case 2: {
+        for (int m = 0; m <= 2; ++m) {
+          auto mode = static_cast<GameFactory::GameMode>(m);
+          std::cout << "Mode " << m << ": total=" << getTotalGames(mode)
+                    << ", won=" << getWonGames(mode)
+                    << ", lost=" << getLostGames(mode)
+                    << ", winRate=" << getWinRate(mode) << "%" << std::endl;
+        }
+        break;
+      }
+      case 3: {
+        if (saveToFile(filename))
+          std::cout << "Saved statistics to: " << filename << std::endl;
+        else
+          std::cout << "Failed to save statistics to: " << filename << std::endl;
+        break;
+      }
+      case 4: {
+        std::cout << "Enter integer encryption key: ";
+        int key;
+        if (!(std::cin >> key)) {
+          std::cin.clear();
+          std::string discard;
+          std::getline(std::cin, discard);
+          std::cout << "Invalid key." << std::endl;
+          break;
+        }
+        if (saveToFile(filename, key))
+          std::cout << "Saved encrypted statistics to: " << filename << std::endl;
+        else
+          std::cout << "Failed to save encrypted statistics to: " << filename << std::endl;
+        break;
+      }
+      case 5: {
+        std::cout << "Load encrypted? (y/n): ";
+        char c;
+        std::cin >> c;
+        std::map<std::string, int> stats;
+        if (c == 'y' || c == 'Y') {
+          std::cout << "Enter integer encryption key: ";
+          int key;
+          if (!(std::cin >> key)) {
+            std::cin.clear();
+            std::string discard;
+            std::getline(std::cin, discard);
+            std::cout << "Invalid key." << std::endl;
+            break;
+          }
+          stats = loadFromFile(filename, key);
+        } else {
+          stats = loadFromFile(filename);
+        }
+
+        if (stats.empty()) {
+          std::cout << "No statistics loaded (file missing or empty)." << std::endl;
+        } else {
+          for (const auto &p : stats) {
+            std::cout << p.first << ": " << p.second << std::endl;
+          }
+        }
+        break;
+      }
+      case 6:
+        clear();
+        std::cout << "Statistics cleared." << std::endl;
+        break;
+      case 0:
+        return;
+      default:
+        std::cout << "Unknown option." << std::endl;
+    }
+  }
 }
